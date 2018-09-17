@@ -1,3 +1,17 @@
+# PLEX-AWS
+
+The goal of the project is to create a template for a deployment of Plex on AWS that balances performance and cost.
+
+## Todo
+
+1. IAM Profile
+2. Deploy Goofys
+2. Update server config - Goofys for media, EFS for Plex user
+3. Add IAM Profile to CF
+4. Add EC2 to CF
+5. Deploy deployment script
+6. Options for VPC deploy or use current
+
 ## Welcome to GitHub Pages
 
 You can use the [editor on GitHub](https://github.com/hhelmich/plex-aws/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
