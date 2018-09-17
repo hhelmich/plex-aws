@@ -1,0 +1,10 @@
+[
+	{
+		"ParameterKey": "PlexProjectId",
+		"ParameterValue": "xyx123456789012"
+	},
+	{
+		"ParameterKey": "PlexVpcId",
+		"ParameterValue": "vpc-c21dceb8"
+	}
+]
