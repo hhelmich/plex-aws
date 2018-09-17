@@ -6,5 +6,9 @@
 	{
 		"ParameterKey": "PlexVpcId",
 		"ParameterValue": "vpc-c21dceb8"
+	},
+	{
+		"ParameterKey": "PlexSubnetId",
+		"ParameterValue": "subnet-979852a9"
 	}
 ]

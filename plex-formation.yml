@@ -10,6 +10,9 @@ Parameters:
   PlexVpcId:
     Type: "AWS::EC2::VPC::Id"
     Description: "VPC where Plex will be deployed."
+  PlexSubnetId:
+    Type: "AWS::EC2::Subnet::Id"
+    Description: "Subnet for the EFS mount"
 Resources:
   PlexS3Bucket:
     Type: "AWS::S3::Bucket"
@@ -32,3 +35,35 @@ Resources:
           Transitions:
           - StorageClass: "STANDARD_IA"
             TransitionInDays: 60
+  PlexMountSecurityGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      VpcId: !Ref "PlexVpcId"
+      GroupName: "PlexMountSecurityGroup"
+      GroupDescription: "Access for the EFS mount."
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          Description: "Limit access to the EFS mount."
+          CidrIp: "172.31.0.0/16"
+          ToPort: 2049
+          FromPort: 2049
+        - IpProtocol: udp
+          Description: "Limit access to the EFS mount."
+          CidrIp: "172.31.0.0/16"
+          ToPort: 2049
+          FromPort: 2049
+      Tags:
+        - Key: "Name"
+          Value: "PlexMountSG"
+  PlexEfs:
+    Type: "AWS::EFS::FileSystem"
+    Properties:
+      Encrypted: True
+      PerformanceMode: "generalPurpose"
+  PlexEfsMount:
+    Type: "AWS::EFS::MountTarget"
+    Properties:
+      FileSystemId: !Ref "PlexEfs"
+      SubnetId: !Ref "PlexSubnetId"
+      SecurityGroups:
+        - !Ref "PlexMountSecurityGroup"
