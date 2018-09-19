@@ -29,12 +29,14 @@ Resources:
         Status: "Suspended"
       LifecycleConfiguration:
         Rules:
-        - Id: !Sub "${PlexProjectId}MediaBucketRule"
-          Status: "Enabled"
-          NoncurrentVersionExpirationInDays: 90
-          Transitions:
-          - StorageClass: "STANDARD_IA"
-            TransitionInDays: 60
+          -
+            Id: !Sub "${PlexProjectId}MediaBucketRule"
+            Status: "Enabled"
+            NoncurrentVersionExpirationInDays: 90
+            Transitions:
+            -
+              StorageClass: "STANDARD_IA"
+              TransitionInDays: 60
   PlexMountSecurityGroup:
     Type: "AWS::EC2::SecurityGroup"
     Properties:
@@ -66,4 +68,68 @@ Resources:
       FileSystemId: !Ref "PlexEfs"
       SubnetId: !Ref "PlexSubnetId"
       SecurityGroups:
-        - !Ref "PlexMountSecurityGroup"
+        -
+          !Ref "PlexMountSecurityGroup"
+  PlexEC2RolePolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: "PlexEC2Policy4InstanceProfile"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Sid: "PlexListBuckets"
+            Effect: "Allow"
+            Action:
+              - "s3:ListAllMyBuckets"
+              - "s3:HeadBucket"
+            Resource: "*"
+          -
+            Sid: "PlexBucketAccess"
+            Effect: "Allow"
+            Action: "s3:*"
+            Resource:
+              - !GetAtt PlexS3Bucket.Arn
+              - !Join [ "", [ !GetAtt PlexS3Bucket.Arn, "/*" ] ]
+      Roles:
+        -
+          Ref: "PlexEC2Role"
+  PlexEC2Role:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+              Effect: "Allow"
+              Principal:
+                Service:
+                  - "ec2.amazonaws.com"
+              Action:
+                - "sts:AssumeRole"
+      Path: "/"
+  PlexInstanceProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    Properties:
+      Path: "/"
+      Roles:
+        -
+          !Ref PlexEC2Role
+      InstanceProfileName: "PlexEC2InstanceProfile"
+  PlexEC2Instance:
+    Type: "AWS::EC2::Istance"
+    Properties:
+      BlockDeviceMappings:
+        -
+          DeviceName: "/dev/sda1"
+          Ebs:
+            DeleteOnTermination: True
+            Encrypted: False
+            VolumeSize: 8
+      IamInstanceProfile: !Ref: PlexInstanceProfile
+      ImageId: "ami-9887c6e7"
+      InstanceType: "t2.micro"
+      Tags:
+        -
+          Key: "Name"
+          Value: !Sub: "${PlexProjectId}-plex-ec2"

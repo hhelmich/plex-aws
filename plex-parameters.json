@@ -1,7 +1,7 @@
 [
 	{
 		"ParameterKey": "PlexProjectId",
-		"ParameterValue": "xyx123456789012"
+		"ParameterValue": "dev-0000-abc"
 	},
 	{
 		"ParameterKey": "PlexVpcId",
