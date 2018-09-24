@@ -8,6 +8,10 @@
 		"ParameterValue": "vpc-c21dceb8"
 	},
 	{
+		"ParameterKey": "PlexAzName",
+		"ParameterValue": "us-east-1e"
+	},
+	{
 		"ParameterKey": "PlexSubnetId",
 		"ParameterValue": "subnet-979852a9"
 	}

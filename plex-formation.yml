@@ -10,6 +10,9 @@ Parameters:
   PlexVpcId:
     Type: "AWS::EC2::VPC::Id"
     Description: "VPC where Plex will be deployed."
+  PlexAzName:
+    Type: "AWS::EC2::AvailabilityZone::Name"
+    Description: "Name of AZ to deploy into"
   PlexSubnetId:
     Type: "AWS::EC2::Subnet::Id"
     Description: "Subnet for the EFS mount"
@@ -114,22 +117,46 @@ Resources:
       Path: "/"
       Roles:
         -
-          !Ref PlexEC2Role
+          !Ref "PlexEC2Role"
       InstanceProfileName: "PlexEC2InstanceProfile"
   PlexEC2Instance:
-    Type: "AWS::EC2::Istance"
+    Type: "AWS::EC2::Instance"
     Properties:
+      AvailabilityZone: !Ref "PlexAzName"
       BlockDeviceMappings:
         -
           DeviceName: "/dev/sda1"
           Ebs:
             DeleteOnTermination: True
-            Encrypted: False
             VolumeSize: 8
-      IamInstanceProfile: !Ref: PlexInstanceProfile
+            VolumeType: "gp2"
+      IamInstanceProfile: !Ref "PlexInstanceProfile"
       ImageId: "ami-9887c6e7"
       InstanceType: "t2.micro"
+      KeyName: "plex-test"
+      NetworkInterfaces:
+        -
+          AssociatePublicIpAddress: True
+          DeleteOnTermination: True
+          DeviceIndex: "0"
+          Description: "Plex EC2 Network interface"
+          SubnetId: !Ref "PlexSubnetId"
+      SecurityGroups:
+        - "Test Plex"
+      UserData:
+        Fn::Base64:
+          !Sub |
+            #!/usr/bin/env bash
+            yum -yt install epel-release
+            yum -yt upgrade
+            yum -yt install nginx awscli vim-enhanced git make rpm-build
+            setsebool -P httpd_can_network_connect 1
+            systemctl enable nginx
+            systemctl start nginx
+            # git clone https://github.com/aws/efs-utils
+            # sudo make rpm
+            # sudo yum -y install ./build/amazon-efs-utils*rpm
       Tags:
         -
           Key: "Name"
-          Value: !Sub: "${PlexProjectId}-plex-ec2"
+          Value: !Sub "${PlexProjectId}-plex-ec2"
